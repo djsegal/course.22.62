@@ -10,6 +10,9 @@ using QuadGK
 Pkg.add("Elliptic")
 using Elliptic
 
+Pkg.add("NLsolve")
+using NLsolve
+
 ## General Input Parameters
 a = 1.13   # INPUT MINOR RADIUS
 b = 0.89 # INPUT BLANKET THICKNESS
@@ -44,6 +47,32 @@ Jsol = 75e6 # LOWER LIMIT SET BY B1 - for 12.9 limit is 51
 Sysol = 660e6  # INPUT MAXIMUM ALLOWABLE STRESS
 Lsol = 2*(kappa*a+b)*1.15         # INPUT LENGTH OF SOLENOID
 B1 = 12.9   # INPUTE SOLENOID FIELD
+
+function rootsolve!(x, F)
+## Parameters
+# global R0 I Sysol Lsol B1 mu0 cJ Isol li
+#R0 = 3.3    # INPUT FIELD ON AXIS
+#I = 8e6    # INPUT PLASMA CURRENT
+#Sy = 600e6  # INPUT MAXIMUM ALLOWABLE STRESS
+#Jmax = 75e6 # INPUT MAXIMUM ALLOWABLE CURRENT DENSITY
+#L = 6         # INPUT LENGTH OF SOLENOID
+#B1 = 12.9   # INPUTE SOLENOID FIELD
+
+## Parameters 2
+#mu0 = 4*pie-7
+#Isol = B1*L/mu0 # Solenoid Current
+#cJ= Isol/(Jmax[]*L) # HTS Thickness
+#li = 0.67   # Internal Inductance
+
+## Flux Equation
+F[1] = mu0*R0*li[]*I/2 - pi*B1*x[1]^2 - pi*B1*( (x[2]^2)/6 + x[1]*x[2]/2 )
+
+## Stress Equation
+F[2] = Sysol - pi*B1*Isol/(2*Lsol*x[2]*(x[2]-cJ))*(x[2]^2/6+x[2]*x[1]/2) -
+    mu0*Isol^2/(4*Lsol^2*x[2]^2)*(x[2]^4/6 + 2/3*x[1]^3*x[2] + x[1]^2*x[2]^2) *
+    1/((x[1]+x[2])^2 - (0.5*(2*x[1]+x[2])+cJ/2)^2 + (0.5*(2*x[1]+x[2])-cJ/2)^2-x[1]^2)
+
+end
 
 ## TF Structure Calculations
 # Parameterization and Cubic Solutions
@@ -381,78 +410,44 @@ Vsc_PF = zeros(1,10)
 Vst_PF = zeros(1,10)
 for i = 1:10
 Vsc_PF[i] = pi*(((rp[i] + a2PF[i])/2 + cj[i]/2).^2 - ((rp[i] + a2PF[i])/2 - cj[i]/2).^2)*Lp
-Vst_PF[i] = pi*((a2PF[i]).^2 - ((rp[i] + a2PF[i])/2 + cj[i]/2).^2)*Lp + 
+Vst_PF[i] = pi*((a2PF[i]).^2 - ((rp[i] + a2PF[i])/2 + cj[i]/2).^2)*Lp +
     pi*(((rp[i] + a2PF[i])/2 - cj[i]/2).^2 - (rp[i]).^2)*Lp
 end
 
 Vol_PF = sum(Vsc_PF) + sum(Vst_PF)
 Cost_PF = Frac*sum(Vsc_PF)*(Price_HTS/Area_Tape) + (((1-Frac)*sum(Vsc_PF))+sum(Vst_PF))*Price_St*8000
 
-# ###############################################
-# ###############################################
-# ## CENTRAL SOLENOID Dimensions and Requirements
-# ## Parameters
-#
-# Isol = B1*Lsol/mu0 # Solenoid Current
-# cJ= Isol/(Jsol*Lsol) # HTS Thickness
-#
-# ## Call fsolve to find roots of system of Flux & Stress Equations
-# func = @rootsol
-# x0 = [0.4,0.2]
-# x = fsolve[func,x0,optimset("MaxFunEvals',100000000,'MaxIter",10000000)]
-#
-# ## Define Inner Radius and Total Thickness
-# a1 = x[1]
-# da = x[2]
-# ## Solenoid Thicknesses and Volumes
-#  cMCS = da - cJ # Thickness of Structure
-#  a2CS = a1+da # Outer Radius
-#  VJ_CS = pi*( ((a2CS+a1)/2 + cJ/2)^2 - ((a2CS+a1)/2 - cJ/2)^2)*Lsol # Volume of HTS
-#  VM_CS = pi*( (a2CS)^2 - ((a2CS+a1)/2 + cJ/2)^2 + ((a2CS+a1)/2 - cJ/2)^2 - a1^2)*Lsol # Volume of Structure
-#
-#
-# Vol_CS = VJ_CS + VM_CS
-# Cost_CS = Price_St*(VM_CS+(1-Frac)*VJ_CS)*8000 + Frac*VJ_CS*(Price_HTS/Area_Tape)
-#
-# Vol_ST_Total = (VM_CS + (sum(Vst_PF)) + (sum(Vsc_PF)*(1-Frac)) + VJ_CS*(1-Frac) + V_TF + Vol_WP*(1-Frac_HTS))
-# Cost_ST_Total = Vol_ST_Total*Price_St*8000
-#
-# Vol_HTS_Total = (VJ_CS*Frac+(sum(Vsc_PF)*Frac)+Vol_WP*Frac_HTS)
-# Cost_HTS_Total = Vol_HTS_Total*Price_HTS/(Area_Tape)
-#
-# Cost_Total = Cost_HTS_Total+Cost_ST_Total
-# Cost_Total11 = Cost_HTS_Total + Cost_ST_Total
-#
-# #end
-# # figure
-# # hold on
-# # plot(5:15,Cost_Total[5:15])
-# # plot(5:15,Cost_HTS_Total[5:15])
-# # plot(5:15,Cost_ST_Total[5:15])
-# # hold off
-#
-# function F = rootsol[x]
-# ## Parameters
-# global R0 I Sysol Lsol B1 mu0 cJ Isol li
-# #R0 = 3.3    # INPUT FIELD ON AXIS
-# #I = 8e6    # INPUT PLASMA CURRENT
-# #Sy = 600e6  # INPUT MAXIMUM ALLOWABLE STRESS
-# #Jmax = 75e6 # INPUT MAXIMUM ALLOWABLE CURRENT DENSITY
-# #L = 6         # INPUT LENGTH OF SOLENOID
-# #B1 = 12.9   # INPUTE SOLENOID FIELD
-#
-# ## Parameters 2
-# #mu0 = 4*pie-7
-# #Isol = B1*L/mu0 # Solenoid Current
-# #cJ= Isol/(Jmax[]*L) # HTS Thickness
-# #li = 0.67   # Internal Inductance
-#
-# ## Flux Equation
-# F[1] = mu0*R0*li[]*I/2 - pi*B1*x[1]^2 - pi*B1*( (x[2]^2)/6 + x[1]*x[2]/2 )
-#
-# ## Stress Equation
-# F[2] = Sysol - pi*B1*Isol/(2*Lsol*x[2]*(x[2]-cJ))*(x[2]^2/6+x[2]*x[1]/2) - ...
-#     mu0*Isol^2/(4*Lsol^2*x[2]^2)*(x[2]^4/6 + 2/3*x[1]^3*x[2] + x[1]^2*x[2]^2)*...
-#     1/((x[1]+x[2])^2 - (0.5*(2*x[1]+x[2])+cJ/2)^2 + (0.5*(2*x[1]+x[2])-cJ/2)^2-x[1]^2)
-#
-# end
+###############################################
+###############################################
+## CENTRAL SOLENOID Dimensions and Requirements
+## Parameters
+
+Isol = B1*Lsol/mu0 # Solenoid Current
+cJ= Isol/(Jsol*Lsol) # HTS Thickness
+
+## Call fsolve to find roots of system of Flux & Stress Equations
+x0 = [0.4,0.2]
+x = nlsolve(rootsolve!,x0).zero
+
+println(x)
+## Define Inner Radius and Total Thickness
+a1 = x[1]
+da = x[2]
+## Solenoid Thicknesses and Volumes
+ cMCS = da - cJ # Thickness of Structure
+ a2CS = a1+da # Outer Radius
+ VJ_CS = pi*( ((a2CS+a1)/2 + cJ/2)^2 - ((a2CS+a1)/2 - cJ/2)^2)*Lsol # Volume of HTS
+ VM_CS = pi*( (a2CS)^2 - ((a2CS+a1)/2 + cJ/2)^2 + ((a2CS+a1)/2 - cJ/2)^2 - a1^2)*Lsol # Volume of Structure
+
+
+Vol_CS = VJ_CS + VM_CS
+Cost_CS = Price_St*(VM_CS+(1-Frac)*VJ_CS)*8000 + Frac*VJ_CS*(Price_HTS/Area_Tape)
+
+Vol_ST_Total = (VM_CS + (sum(Vst_PF)) + (sum(Vsc_PF)*(1-Frac)) + VJ_CS*(1-Frac) + V_TF + Vol_WP*(1-Frac_HTS))
+Cost_ST_Total = Vol_ST_Total*Price_St*8000
+
+Vol_HTS_Total = (VJ_CS*Frac+(sum(Vsc_PF)*Frac)+Vol_WP*Frac_HTS)
+Cost_HTS_Total = Vol_HTS_Total*Price_HTS/(Area_Tape)
+
+Cost_Total = Cost_HTS_Total+Cost_ST_Total
+Cost_Total11 = Cost_HTS_Total + Cost_ST_Total

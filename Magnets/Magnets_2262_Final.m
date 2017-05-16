@@ -374,40 +374,40 @@ end
 Vol_PF = sum(Vsc_PF) + sum(Vst_PF);
 Cost_PF = Frac*sum(Vsc_PF)*(Price_HTS/Area_Tape) + (((1-Frac)*sum(Vsc_PF))+sum(Vst_PF))*Price_St*8000;
 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-% %% CENTRAL SOLENOID Dimensions and Requirements
-% %% Parameters
-% 
-% Isol = B1*Lsol/mu0; % Solenoid Current
-% cJ= Isol/(Jsol*Lsol); % HTS Thickness
-% 
-% %% Call fsolve to find roots of system of Flux & Stress Equations
-% func = @rootsol;
-% x0 = [0.4,0.2];
-% x = fsolve(func,x0,optimset('MaxFunEvals',100000000,'MaxIter',10000000));
-% 
-% %% Define Inner Radius and Total Thickness
-% a1 = x(1);
-% da = x(2);
-% %% Solenoid Thicknesses and Volumes
-%  cMCS = da - cJ; % Thickness of Structure
-%  a2CS = a1+da; % Outer Radius
-%  VJ_CS = pi*( ((a2CS+a1)/2 + cJ/2)^2 - ((a2CS+a1)/2 - cJ/2)^2)*Lsol; % Volume of HTS
-%  VM_CS = pi*( (a2CS)^2 - ((a2CS+a1)/2 + cJ/2)^2 + ((a2CS+a1)/2 - cJ/2)^2 - a1^2)*Lsol; % Volume of Structure
-% 
-% 
-% Vol_CS = VJ_CS + VM_CS;
-% Cost_CS = Price_St*(VM_CS+(1-Frac)*VJ_CS)*8000 + Frac*VJ_CS*(Price_HTS/Area_Tape);
-%  
-% Vol_ST_Total = (VM_CS + (sum(Vst_PF)) + (sum(Vsc_PF)*(1-Frac)) + VJ_CS*(1-Frac) + V_TF + Vol_WP*(1-Frac_HTS));
-% Cost_ST_Total = Vol_ST_Total*Price_St*8000;
-% 
-% Vol_HTS_Total = (VJ_CS*Frac+(sum(Vsc_PF)*Frac)+Vol_WP*Frac_HTS);
-% Cost_HTS_Total = Vol_HTS_Total*Price_HTS/(Area_Tape);
-% 
-% Cost_Total = Cost_HTS_Total+Cost_ST_Total;
-% Cost_Total11 = Cost_HTS_Total + Cost_ST_Total;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%% CENTRAL SOLENOID Dimensions and Requirements
+%% Parameters
+
+Isol = B1*Lsol/mu0; % Solenoid Current
+cJ= Isol/(Jsol*Lsol); % HTS Thickness
+
+%% Call fsolve to find roots of system of Flux & Stress Equations
+func = @rootsol;
+x0 = [0.4,0.2];
+x = fsolve(func,x0,optimset('MaxFunEvals',100000000,'MaxIter',10000000));
+
+%% Define Inner Radius and Total Thickness
+a1 = x(1);
+da = x(2);
+%% Solenoid Thicknesses and Volumes
+ cMCS = da - cJ; % Thickness of Structure
+ a2CS = a1+da; % Outer Radius
+ VJ_CS = pi*( ((a2CS+a1)/2 + cJ/2)^2 - ((a2CS+a1)/2 - cJ/2)^2)*Lsol; % Volume of HTS
+ VM_CS = pi*( (a2CS)^2 - ((a2CS+a1)/2 + cJ/2)^2 + ((a2CS+a1)/2 - cJ/2)^2 - a1^2)*Lsol; % Volume of Structure
+
+
+Vol_CS = VJ_CS + VM_CS;
+Cost_CS = Price_St*(VM_CS+(1-Frac)*VJ_CS)*8000 + Frac*VJ_CS*(Price_HTS/Area_Tape);
+ 
+Vol_ST_Total = (VM_CS + (sum(Vst_PF)) + (sum(Vsc_PF)*(1-Frac)) + VJ_CS*(1-Frac) + V_TF + Vol_WP*(1-Frac_HTS));
+Cost_ST_Total = Vol_ST_Total*Price_St*8000;
+
+Vol_HTS_Total = (VJ_CS*Frac+(sum(Vsc_PF)*Frac)+Vol_WP*Frac_HTS);
+Cost_HTS_Total = Vol_HTS_Total*Price_HTS/(Area_Tape);
+
+Cost_Total = Cost_HTS_Total+Cost_ST_Total;
+Cost_Total11 = Cost_HTS_Total + Cost_ST_Total;
 
 %end
 % figure
