@@ -5,16 +5,16 @@ clear;
 
 global Sysol Lsol B1 Isol cJ mu0 R0 I li
 
-%% General Input Parameters 
-a = 1.13;   % INPUT MINOR RADIUS
-b = 0.89; % INPUT BLANKET THICKNESS
-R0 = 3.3;  % INPUT MAJOR RADIUS
-B0 = 9.2; % INPUT FIELD ON AXIS
+%% General Input Parameters
+a = 2;   % INPUT MINOR RADIUS
+b = 1.19; % INPUT BLANKET THICKNESS
+R0 = 6.3;  % INPUT MAJOR RADIUS
+B0 = 5.2; % INPUT FIELD ON AXIS
 Q_max = 350000; % INPUT HEAT FLUX [W/m^3]
 N = 18; % NUMBER OF COILS
 na = 1.5e20; % DENSITY OF PLASMA
 Ta = 15e3*11600; % TEMPERATURE OF PLASMA
-I = 8e6;    % INPUT PLASMA CURRENT
+I = 15e6;    % INPUT PLASMA CURRENT
 
 %% Parameters - Shape and TF Coils
 Sy = 1050*10^6; % Maximum Allowable Stress TF
@@ -49,10 +49,10 @@ k3 = (-(1+delta)+2*l0^2*(2-l0^2))/(l0^2*(1-l0^2)^2);
 c1 = (3/2)*(1/l0);
 c2 = (1/2)*(1/l0^3);
 
-% Cubic Solution 
+% Cubic Solution
 polynz = [1 k2/k3 k1/k3 (R0)/((a+b)*k3) + 1/k3];
 z = roots(polynz);
-z1 = z(1); z2 = z(2); z3 = z(3); 
+z1 = z(1); z2 = z(2); z3 = z(3);
 
 % Force Calculation
 
@@ -62,18 +62,18 @@ FR2 = -B0^2*R0^2/(2*mu0)*... % Outward Centering
     (c1/k3)*(kappa*a+b)/(a+b)*((1-3*c2/c1*z1)*acoth(sqrt(z1))/((z1-z2)*(z1-z3)*sqrt(z1))+...
      (3*c2/c1*z2-1)*acoth(sqrt(z2))/((z1-z2)*(z2-z3)*sqrt(z2))+...
      (3*c2/c1*z3-1)*acoth(sqrt(z3))/((z1-z3)*(z3-z2)*sqrt(z3)));
- 
+
 % Net Centering Force
  FC = 2*abs(FR1 + FR2);
- 
+
 % Tensile Force
  FZ = (pi*B0^2*R0^2/(mu0))*log((1+eb)/(1-eb));
  FT = (pi*B0^2*R0^2/(2*mu0))*log((1+eb)/(1-eb));
- 
+
 % Total Stress and Thickness
- c = (1/Sy)*(R0*FT/(pi*R0^2*(2-2*eb)) + FC/(2*f*(kappa*a + b))); % Thickness of material 
+ c = (1/Sy)*(R0*FT/(pi*R0^2*(2-2*eb)) + FC/(2*f*(kappa*a + b))); % Thickness of material
  % cJ = R0*(1 - eb - ((1-eb)^2 - 2*B0/(mu0*R0*Jmax))^0.5);
- 
+
 % Arc Length Calculation
 L1 = f*(a*kappa + b); % Straight Section Arc Length
 
@@ -85,7 +85,7 @@ L2 = integral(func,0,1); % Curved Section Arc Length
 V_TF = N*c*(2*pi/N)*(R0 - a - b - c/2)*(2*L1 + 2*L2);  % Volume of TF coil
 C_TF = V_TF*Price_St*8000;
 
-%% Winding Pack Calculations 
+%% Winding Pack Calculations
 
 Tape_w = 0.012; % tape width [m]
 Tape_t = 0.0000446; % tape thickness [m]
@@ -115,7 +115,7 @@ Tape_L = Tape_N*Cable_L; % Length of tape per cable [m];
 Tcs = 60; % lowest current sharing temperature
 R1 = R0-a-b-c/2; % Radius from center of CS to TF straight leg
 R2 = R0+a+b+c/2; % Radius from center of CS to TF outter D
-Ro = (R1*R2)^0.5; 
+Ro = (R1*R2)^0.5;
 K = 0.5*log(R2/R1);
 Coil_Inductance = (mu0*Turns^2*Ro*K^2)*(besseli(0,K) + 2*besseli(1,K) + besseli(2,K))/2; % TF coil inductance
 Coil_Energy = 0.5*Coil_Inductance*(Imax*1000)^2; % TF coil magnetic energy
@@ -129,7 +129,7 @@ St_Yield = 800 *10^6; % estimated yield strength of steel
 Area_St = Imax*Cable_L*B_coil_max/((2/3)*St_Yield); % area of steel component of cable
 
 %Determine Cooling Channel Dimensions
-A = (Area_St+Area_Cu); 
+A = (Area_St+Area_Cu);
 Cp_H2 = 10000; % Average specific heat of supercritical hydrogen @ 30bar from 20-55K
 dT_H2 = 10; % Allowable temperature rise in the fluid
 Q_int = (Q_max/0.029)*(1-exp(-.029*(WP_d))); % Integrated heat flux along one cable length [W/m^2]
@@ -159,7 +159,7 @@ Vol_H2 = WP_Area*Frac_H2*N*Coil_P;
 Vol_St = WP_Area*Frac_St*N*Coil_P;
 Vol_WP = WP_Area*Coil_P*N;
 
-Cost_Tape = Price_HTS*Tape_L*Cable_N; 
+Cost_Tape = Price_HTS*Tape_L*Cable_N;
 Cost_Cu = Price_Cu*Vol_Cu*8950;
 Cost_St = Price_St*Vol_St*8000;
 
@@ -197,10 +197,10 @@ int4 = 27;
 li = 1./(exp(alpha)-1-alpha).^2.*(int1+int2+int3+int4);
 Bv = mu0*I/(4*pi*R0)*(betap + (li-3)/2 + log(8*R0/a));
 
- % Bz Field Contribution 
+ % Bz Field Contribution
  Bzfunc = @(rho,eta,B0,k) (B0/pi)*(1/((1+rho)^2+eta^2)^0.5)*(ellipticK(k)...
      + (1-rho^2-eta^2)/((1-rho)^2+eta^2)*ellipticE(k));
- 
+
 % Divertor Field Contribution
 r1 = R0-a*(0.709*kappa+delta); z1 = 1.464*a*kappa; I1 = 0.485*I;
 r2 = R0+a*(0.962*kappa-delta); z2 = a*kappa; I2 = -0.558*I;
@@ -277,7 +277,7 @@ for i = 1:4
     BzPFnew(i) = Bzfunc(rhop(i),etap(i),B0pnew(i),kp(i));
 end
 BzPFsnew = sum(BzPFnew);
-Bvtotnew_SF = BzDivsnew + BzPFsnew; 
+Bvtotnew_SF = BzDivsnew + BzPFsnew;
 
 
 % Forces on PF and Divertor Coils
@@ -308,7 +308,7 @@ Frp = @(ri,rm,zi,zm,Ii,Im) mu0*Ii*Im/2*((ri+rm)/(sqrt((ri+rm)^2+(zi-zm)^2)))*...
     + ellipticE(sqrt(4*ri*rm/((ri+rm)^2+(zi-zm)^2)))*1/(1-4*ri*rm/((ri+rm)^2+(zi-zm)^2)))*...
     ((4*ri*rm/((ri+rm)^2+(zi-zm)^2))/2 - ri/(ri+rm));
 
-% Choose 
+% Choose
 
 Fzc = zeros(1,10);
 Frc = zeros(1,10);
@@ -326,10 +326,10 @@ for i = 1:10
        if j == i
         Fzc(1,j) = Fzc(1,j)+0;
         Frc(1,j) = Frc(1,j)+Frs(ItPF(i));
-       else 
-        Fzc(1,j) = Fzc(1,j) + Fz(rp(i),rp(j),zp(i),zp(j),ItPF(i),ItPF(j));   
-        Frc(1,j) = Frc(1,j) + Fr(rp(i),rp(j),zp(i),zp(j),ItPF(i),ItPF(j)); 
-       end 
+       else
+        Fzc(1,j) = Fzc(1,j) + Fz(rp(i),rp(j),zp(i),zp(j),ItPF(i),ItPF(j));
+        Frc(1,j) = Frc(1,j) + Fr(rp(i),rp(j),zp(i),zp(j),ItPF(i),ItPF(j));
+       end
    end
 end
 
@@ -342,7 +342,7 @@ end
 % Fzc = abs(Fzc);
 % Sy=600*10^6;
 % rvz = sqrt((Fzc(7)+Fzc(8))/(2*pi*Sy));
-% 
+%
 % % Thickness of Radial Poles PF
 % N=2;
 % Jmax = 500*10^6;
@@ -375,7 +375,7 @@ Vol_PF = sum(Vsc_PF) + sum(Vst_PF);
 Cost_PF = Frac*sum(Vsc_PF)*(Price_HTS/Area_Tape) + (((1-Frac)*sum(Vsc_PF))+sum(Vst_PF))*Price_St*8000;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% CENTRAL SOLENOID Dimensions and Requirements
 %% Parameters
 
@@ -399,7 +399,7 @@ da = x(2);
 
 Vol_CS = VJ_CS + VM_CS;
 Cost_CS = Price_St*(VM_CS+(1-Frac)*VJ_CS)*8000 + Frac*VJ_CS*(Price_HTS/Area_Tape);
- 
+
 Vol_ST_Total = (VM_CS + (sum(Vst_PF)) + (sum(Vsc_PF)*(1-Frac)) + VJ_CS*(1-Frac) + V_TF + Vol_WP*(1-Frac_HTS));
 Cost_ST_Total = Vol_ST_Total*Price_St*8000;
 
@@ -416,29 +416,3 @@ Cost_Total11 = Cost_HTS_Total + Cost_ST_Total;
 % plot(5:15,Cost_HTS_Total(5:15))
 % plot(5:15,Cost_ST_Total(5:15))
 % hold off
-
-function F = rootsol(x)
-%% Parameters
-global R0 I Sysol Lsol B1 mu0 cJ Isol li
-%R0 = 3.3;    % INPUT FIELD ON AXIS
-%I = 8e6;    % INPUT PLASMA CURRENT
-%Sy = 600e6;  % INPUT MAXIMUM ALLOWABLE STRESS
-%Jmax = 75e6; % INPUT MAXIMUM ALLOWABLE CURRENT DENSITY
-%L = 6;         % INPUT LENGTH OF SOLENOID
-%B1 = 12.9;   % INPUTE SOLENOID FIELD
-
-%% Parameters 2
-%mu0 = 4*pi*10^-7;
-%Isol = B1*L/mu0; % Solenoid Current
-%cJ= Isol/(Jmax*L); % HTS Thickness
-%li = 0.67;   % Internal Inductance
-
-%% Flux Equation
-F(1) = mu0*R0*li*I/2 - pi*B1*x(1)^2 - pi*B1*( (x(2)^2)/6 + x(1)*x(2)/2 ); 
-
-%% Stress Equation
-F(2) = Sysol - pi*B1*Isol/(2*Lsol*x(2)*(x(2)-cJ))*(x(2)^2/6+x(2)*x(1)/2) - ...
-    mu0*Isol^2/(4*Lsol^2*x(2)^2)*(x(2)^4/6 + 2/3*x(1)^3*x(2) + x(1)^2*x(2)^2)*...
-    1/((x(1)+x(2))^2 - (0.5*(2*x(1)+x(2))+cJ/2)^2 + (0.5*(2*x(1)+x(2))-cJ/2)^2-x(1)^2);
-
-end
