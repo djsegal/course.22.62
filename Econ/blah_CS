@@ -1,0 +1,8 @@
+"""
+    divertor_material_cost
+Heating due to thermal shielding @ 80K [kW].
+"""
+
+function blah_CS()
+  1.0
+end

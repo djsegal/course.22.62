@@ -6,15 +6,15 @@ clear;
 global Sysol Lsol B1 Isol cJ mu0 R0 I li
 
 %% General Input Parameters
-a = 2;   % INPUT MINOR RADIUS
-b = 1.19; % INPUT BLANKET THICKNESS
-R0 = 6.3;  % INPUT MAJOR RADIUS
-B0 = 5.2; % INPUT FIELD ON AXIS
+a = 1.13;   % INPUT MINOR RADIUS
+b = 0.89; % INPUT BLANKET THICKNESS
+R0 = 3.3;  % INPUT MAJOR RADIUS
+B0 = 9.2; % INPUT FIELD ON AXIS
 Q_max = 350000; % INPUT HEAT FLUX [W/m^3]
 N = 18; % NUMBER OF COILS
 na = 1.5e20; % DENSITY OF PLASMA
 Ta = 15e3*11600; % TEMPERATURE OF PLASMA
-I = 15e6;    % INPUT PLASMA CURRENT
+I = 8e6;    % INPUT PLASMA CURRENT
 
 %% Parameters - Shape and TF Coils
 Sy = 1050*10^6; % Maximum Allowable Stress TF

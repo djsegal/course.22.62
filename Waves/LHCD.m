@@ -1,13 +1,15 @@
 %#######################Calculate the efficiency in Ehst and Karney 1991 paper
-clear;
+clear all;
+close all;
+clc;
 %###########  Physical Constants
 global e0 ee me mi mekev clight lnlambda Zeff R0 a epsilon B0 theta gamma0 nu_n nu_T n_bar T_bar coeff eta_LH n_para_m rho_J_m ;
 e0 =  8.85e-12 ; %F/m
-ee = 1.6e-19 ; 
+ee = 1.6021766208e-19 ; 
 mekev = 510.998; %kev/c^2
-me =  9.11e-31; %kg
+me =  9.10938356e-31; %kg
 mi = (3.02+2.01)/2.0*1.66e-27;  %D-T plasma, in kg
-clight = 3.0e8; %light speed
+clight = 2.99792458e8; %light speed
 %################### Plasma Parameters##############
 lnlambda = 19.0; 
 Zeff = 1.0;
@@ -62,6 +64,7 @@ v_Te = @(rho)sqrt(2*T_profile(rho)./mekev)*clight;
 v_e = @(rho)sqrt(T_profile(rho)./mekev)*clight;
 
 omega_pe2 = @(rho,theta)(n_profile(rho)*1e20).*ee^2./(me*e0); %plasma frequency square
+
 omega_ce = @(rho,theta)ee*B(rho,theta)/me; %electron cyclotron frequency
 omega_ci = @(rho,theta)ee*B(rho,theta)/mi; %ion cyclotron frequency
 

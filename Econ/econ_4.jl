@@ -1,11 +1,7 @@
-using DataArrays, DataFrames, Grid, Plots
+using DataArrays, DataFrames, Grid
 
-T = 50; #lifetime of plant from start of construction to end of decomissioning -- years
-cT = 7; #construction time -- years
-MW = 500;   #power output of the plant from some other group -- MW
-discountRate = .08; #discount rate for the project
-Availability = .7;
-P_f = 1;
+# MW = 500;   #power output of the plant from some other group -- MW
+# P_f = 1;
 
 #%%% DEFINE THE TABLE!! %%%%%%%%%%%%%%%%%%%%%
 MCT = DataFrame();
@@ -109,37 +105,37 @@ OvernightCostperMW = OvernightCost / MW;
 #%%% spread costs over construction time %%%%%%%%%%%%%%%%%%%%%
 ParsonDist = [.1, .2, .4, .2, .1;]
 ParsonYears = 1.0:length(ParsonDist);
-dummyYears = linspace(1,length(ParsonDist),cT);
+dummyYears = linspace(1,length(ParsonDist),construction_time_in_years);
 ig = InterpGrid( ParsonDist, BCnil, InterpLinear);
 y=[ig[x] for x in dummyYears];
 ConstructDist = y/sum(y);
 
 #%%% define cost schedule %%%%%%%%%%%%%%%%%%%%%
-CS = zeros(3, T + cT)
+CS = zeros(3, plant_life_in_years + construction_time_in_years)
 
 #%%% add in construction costs %%%%%%%%%%%%%%%%%%%%%
-CS[1,1:cT] = ConstructDist * OvernightCost;
-CS[2,cT+1:end] = 540000*MW + 600*P_f
+CS[1,1:construction_time_in_years] = ConstructDist * OvernightCost;
+CS[2,construction_time_in_years+1:end] = 540000*MW + 600*P_f
 
 
 #%%% define total costs %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 TC = sum(CS,1)
 # CS[4,:] = TC;
-# TC[1,1:T] = ConstructionDist * OvernightCost + 540000*MW + 600*Pf
+# TC[1,1:plant_life_in_years] = ConstructionDist * OvernightCost + 540000*MW + 600*Pf
 
 #%%% define electricity produced per year in MWh %%%%%%%%%%%%%%%%%%%%%
-ElecProd = zeros(2, T + cT)
-ElecProd[1,cT+1:end] = fill!(zeros(1, T), Availability * MW * 365 * 24)
+ElecProd = zeros(2, plant_life_in_years + construction_time_in_years)
+ElecProd[1,construction_time_in_years+1:end] = fill!(zeros(1, plant_life_in_years), econ_availability * MW * 365 * 24)
 
 
 #%%% discount cost per year and electricity per year %%%%%%%%%%%%%%%%%%%%%
-for i = 1:cT + T
-  ElecProd[2,i] = ElecProd[1,i]/(1.+discountRate)^i
-  TC[2,i] = sum(CS[1:3,i])/(1.+discountRate)^i
+for i = 1:construction_time_in_years + plant_life_in_years
+  ElecProd[2,i] = ElecProd[1,i]/(1.+discount_rate)^i
+  TC[2,i] = sum(CS[1:3,i])/(1.+discount_rate)^i
 end
 
 
-TotalYears = linspace(1,cT + T, cT + T);
+TotalYears = linspace(1,construction_time_in_years + plant_life_in_years, construction_time_in_years + plant_life_in_years);
 ElecPV = sum(ElecProd[2,:])
 CostPV = sum(TC[2,:]);
 lcoe = CostPV / ElecPV;

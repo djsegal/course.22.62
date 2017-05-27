@@ -15,7 +15,7 @@ global R0 I Sysol Lsol B1 mu0 cJ Isol li
 %li = 0.67;   % Internal Inductance
 
 %% Flux Equation
-F(1) = mu0*R0*li*I/2 - pi*B1*x(1)^2 - pi*B1*( (x(2)^2)/6 + x(1)*x(2)/2 ); 
+F(1) = mu0*R0*li*I/2 - pi*B1*x(1)^2 - pi*B1*( (x(2)^2)/6 + x(1)*x(2)/2 );
 
 %% Stress Equation
 F(2) = Sysol - pi*B1*Isol/(2*Lsol*x(2)*(x(2)-cJ))*(x(2)^2/6+x(2)*x(1)/2) - ...
