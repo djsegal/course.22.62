@@ -6,15 +6,15 @@ clear;
 global Sysol Lsol B1 Isol cJ mu0 R0 I li
 
 %% General Input Parameters
-a = 1.13;   % INPUT MINOR RADIUS
-b = 0.89; % INPUT BLANKET THICKNESS
-R0 = 3.3;  % INPUT MAJOR RADIUS
-B0 = 9.2; % INPUT FIELD ON AXIS
+a = 2;   % INPUT MINOR RADIUS
+b = 1.19; % INPUT BLANKET THICKNESS
+R0 = 6.3;  % INPUT MAJOR RADIUS
+B0 = 5.2; % INPUT FIELD ON AXIS
 Q_max = 350000; % INPUT HEAT FLUX [W/m^3]
 N = 18; % NUMBER OF COILS
 na = 1.5e20; % DENSITY OF PLASMA
 Ta = 15e3*11600; % TEMPERATURE OF PLASMA
-I = 8e6;    % INPUT PLASMA CURRENT
+I = 15e6;    % INPUT PLASMA CURRENT
 
 %% Parameters - Shape and TF Coils
 Sy = 1050*10^6; % Maximum Allowable Stress TF
@@ -27,7 +27,7 @@ eb = (a+b)/R0; % Normalized Inner Thickness
 x0 = a+b;      % Minor Radius and Blanket Thickness
 B_coil_max = B0/(1-eb);
 ITF = 2*pi*B0*R0/mu0; % Total Current for given B0
-Ic = ITF/18; % Current per coil
+Ic = ITF/N; % Current per coil
 kB = 1.38*10^-23;
 Price_HTS = 36; % Estimated cost of HTS per meter
 Price_St = 9.6; % Estimated cost of steel per kg
@@ -209,9 +209,9 @@ r4 = R0-a*(0.709*kappa+delta); z4 = -1.464*a*kappa; I4 = 0.485*I;
 r5 = R0+a*(0.962*kappa-delta); z5 = -a*kappa; I5 = -0.558*I;
 r6 = R0+a*(0.962*kappa-delta); z6 = -1.272*a*kappa; I6 = 0.669*I;
 
-rd = [r1 r6 r2 r5 r3 r4];
-zd = [z1 z6 z2 z5 z3 z4];
-Id = -[I1 I6 I2 I5 I3 I4];
+rd = [r1 r4 r2 r5 r3 r6];
+zd = [z1 z4 z2 z5 z3 z6];
+Id = -[I1 I4 I2 I5 I3 I6];
 
 B0d = (mu0/2)*Id./rd;
 rhod = R0./rd;
@@ -316,8 +316,8 @@ Frc = zeros(1,10);
 rm = 3.3;
 zm = 0;
 
-rp = [r1 r2 r3 r4 r5 r6 rp2 rp5 rp3 rp4 rm];
-zp = [z1 z2 z3 z4 z5 z6 zp2 zp5 zp3 zp4 zm];
+rp = [rd rp rm];
+zp = [zd zp zm];
 ItPF = [ItPF Im];
 k = [kd kp];
 
@@ -350,14 +350,14 @@ end
 
 % Thickness of the PF Coil
 
-Lp=0.3;
+Lp = 0.3;
 cj = zeros(1,10);
 a2PF = zeros(1,10);
 cm = zeros(1,10);
 for p = 1:10
     cj(p) = abs(ItPF(p))/(Lp*Jmax);
-    a2PF(p) = (abs(Frc(p))/2)/(Lp*Sy) + rp(p)+cj(p);
-    cm(p) = a2PF(p)-rp(p) - cj(p);
+    cm(p) = (abs(Frc(p))/2)/(Lp*Sy);
+    a2PF(p) = rp(p) + cj(p)/2 + cm(p)/2;
 end
 
 
@@ -365,10 +365,12 @@ end
 
 Vsc_PF = zeros(1,10);
 Vst_PF = zeros(1,10);
+a1PF = zeros(1,10);
 for i = 1:10
-Vsc_PF(i) = pi*(((rp(i) + a2PF(i))/2 + cj(i)/2).^2 - ((rp(i) + a2PF(i))/2 - cj(i)/2).^2)*Lp;
-Vst_PF(i) = pi*((a2PF(i)).^2 - ((rp(i) + a2PF(i))/2 + cj(i)/2).^2)*Lp + ...
-    pi*(((rp(i) + a2PF(i))/2 - cj(i)/2).^2 - (rp(i)).^2)*Lp;
+    a1PF(i) = rp(i) - cj(i)/2 - cm(i)/2;
+Vsc_PF(i) = pi*(((a1PF(i) + a2PF(i))/2 + cj(i)/2).^2 - ((a1PF(i) + a2PF(i))/2 - cj(i)/2).^2)*Lp;
+Vst_PF(i) = pi*((a2PF(i)).^2 - ((a1PF(i) + a2PF(i))/2 + cj(i)/2).^2)*Lp + ...
+    pi*(((a1PF(i) + a2PF(i))/2 - cj(i)/2).^2 - (a1PF(i)).^2)*Lp;
 end
 
 Vol_PF = sum(Vsc_PF) + sum(Vst_PF);
