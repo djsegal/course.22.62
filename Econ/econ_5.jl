@@ -9,6 +9,7 @@ R_0 = 3.3
 a() = 1
 kappa = 1.8
 blanket_thickness() = .7
+shield_thickness() = .7
 # END stuff to comment out once this code can see all the other variables in the master code
 
 eta_BOP = .5 # we want to be able to sweep over this, from .4 - .6
